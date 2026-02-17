@@ -1,11 +1,20 @@
-const button = document.getElementById("checkBackendBtn");
+const runButton = document.getElementById("runQueryBtn");
 const responseText = document.getElementById("responseText");
 
-button.addEventListener("click", async () => {
+runButton.addEventListener("click", async () => {
+    const query = document.getElementById("sqlInput").value;
+
     try {
-        const response = await fetch("http://127.0.0.1:8000/");
+        const response = await fetch("http://127.0.0.1:8000/execute", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ query: query })
+        });
+
         const data = await response.json();
-        responseText.innerText = data.message;
+        responseText.innerText = JSON.stringify(data, null, 2);
     } catch (error) {
         responseText.innerText = "Error connecting to backend";
     }
