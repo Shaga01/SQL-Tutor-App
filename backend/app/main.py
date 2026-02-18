@@ -2,9 +2,13 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from app.services.database_service import DatabaseService
+from app.services.tutor_service import TutorService
+
 
 app = FastAPI()
 db_service = DatabaseService()
+tutor_service = TutorService()
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -23,5 +27,12 @@ def root():
 
 @app.post("/execute")
 def execute_sql(request: QueryRequest):
-    result = db_service.execute_query(request.query)
-    return result
+    execution_result = db_service.execute_query(request.query)
+
+    tutor_response = tutor_service.generate_feedback(
+        execution_result,
+        user_level="beginner"
+    )
+
+    return tutor_response
+

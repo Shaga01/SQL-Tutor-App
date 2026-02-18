@@ -14,10 +14,19 @@ runButton.addEventListener("click", async () => {
         });
 
         const data = await response.json();
-        if (data.status === "success") {
-            responseText.innerText = JSON.stringify(data.data, null, 2);
-        } else {
-            responseText.innerText = `Error Type: ${data.error_type}\nMessage: ${data.message}`;
+       if (data.status === "success") {
+            responseText.innerText =
+                "RESULT:\n" +
+                JSON.stringify(data.data, null, 2) +
+                "\n\nEXPLANATION:\n" +
+                data.explanation;
+        }else {
+            responseText.innerText =
+            "ERROR TYPE: " + data.error_type +
+            "\nMESSAGE: " + data.message +
+            "\n\nEXPLANATION:\n" +
+            data.explanation;
+
 }
 
     } catch (error) {
