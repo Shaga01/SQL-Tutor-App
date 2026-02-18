@@ -33,17 +33,69 @@ class DatabaseService:
         self.connection.commit()
 
     def execute_query(self, query: str):
+        if not self._is_query_safe(query):
+            return {
+            "status": "error",
+            "error_type": "unsafe_query",
+            "message": "Only SELECT queries are allowed in this tutor."
+        }
+
         cursor = self.connection.cursor()
 
         try:
             cursor.execute(query)
 
-            if query.strip().lower().startswith("select"):
-                rows = cursor.fetchall()
-                return [dict(row) for row in rows]
-            else:
-                self.connection.commit()
-                return {"message": "Query executed successfully"}
+            rows = cursor.fetchall()
+
+            return {
+                "status": "success",
+                "data": [dict(row) for row in rows]
+            }
 
         except Exception as e:
-            return {"error": str(e)}
+            return self._classify_error(str(e))
+
+        
+    def _is_query_safe(self, query: str) -> bool:
+        forbidden_keywords = ["drop", "delete", "update", "insert", "alter"]
+
+        query_lower = query.lower()
+        for keyword in forbidden_keywords:
+            if keyword in query_lower:
+                return False
+
+        return True
+    
+
+    def _classify_error(self, error_message: str):
+        error_message_lower = error_message.lower()
+
+        if "no such table" in error_message_lower:
+            return {
+            "status": "error",
+            "error_type": "table_not_found",
+            "message": "The table you referenced does not exist."
+        }
+
+        elif "no such column" in error_message_lower:
+            return {
+            "status": "error",
+            "error_type": "column_not_found",
+            "message": "One of the columns you used does not exist in the table."
+        }
+
+        elif "syntax error" in error_message_lower:
+            return {
+            "status": "error",
+            "error_type": "syntax_error",
+            "message": "There is a SQL syntax error in your query."
+        }
+
+        else:
+            return {
+            "status": "error",
+            "error_type": "unknown_error",
+            "message": error_message
+        }
+
+

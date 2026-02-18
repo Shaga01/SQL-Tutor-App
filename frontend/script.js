@@ -14,7 +14,12 @@ runButton.addEventListener("click", async () => {
         });
 
         const data = await response.json();
-        responseText.innerText = JSON.stringify(data, null, 2);
+        if (data.status === "success") {
+            responseText.innerText = JSON.stringify(data.data, null, 2);
+        } else {
+            responseText.innerText = `Error Type: ${data.error_type}\nMessage: ${data.message}`;
+}
+
     } catch (error) {
         responseText.innerText = "Error connecting to backend";
     }
