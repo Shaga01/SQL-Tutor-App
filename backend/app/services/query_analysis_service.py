@@ -1,40 +1,57 @@
+import re
+
 class QueryAnalysisService:
     def __init__(self):
         pass
 
     def analyze(self, query: str):
-        query_lower = query.lower()
+        query_clean = query.strip()
+        query_lower = query_clean.lower()
 
         analysis = []
 
-        if "select" in query_lower:
-            analysis.append(self._analyze_select(query))
+        select_info = self._extract_select(query_clean)
+        if select_info:
+            analysis.append(select_info)
 
-        if "from" in query_lower:
-            analysis.append(self._analyze_from(query))
+        from_info = self._extract_from(query_clean)
+        if from_info:
+            analysis.append(from_info)
 
-        if "where" in query_lower:
-            analysis.append(self._analyze_where(query))
+        where_info = self._extract_where(query_clean)
+        if where_info:
+            analysis.append(where_info)
 
-        if "group by" in query_lower:
-            analysis.append(self._analyze_group_by(query))
-
-        if "join" in query_lower:
-            analysis.append(self._analyze_join(query))
+        group_by_info = self._extract_group_by(query_clean)
+        if group_by_info:
+            analysis.append(group_by_info)
 
         return analysis
 
-    def _analyze_select(self, query):
-        return "SELECT clause specifies which columns are retrieved."
+    def _extract_select(self, query):
+        match = re.search(r"select (.*?) from", query, re.IGNORECASE)
+        if match:
+            columns = match.group(1).strip()
+            return f"You are selecting: {columns}."
+        return None
 
-    def _analyze_from(self, query):
-        return "FROM clause specifies the table being queried."
+    def _extract_from(self, query):
+        match = re.search(r"from (.*?)( where| group by|$)", query, re.IGNORECASE)
+        if match:
+            table = match.group(1).strip()
+            return f"You are querying from table: {table}."
+        return None
 
-    def _analyze_where(self, query):
-        return "WHERE clause filters rows based on conditions."
+    def _extract_where(self, query):
+        match = re.search(r"where (.*?)( group by|$)", query, re.IGNORECASE)
+        if match:
+            condition = match.group(1).strip()
+            return f"The WHERE clause filters rows where: {condition}."
+        return None
 
-    def _analyze_group_by(self, query):
-        return "GROUP BY groups rows for aggregation functions like COUNT or AVG."
-
-    def _analyze_join(self, query):
-        return "JOIN combines rows from multiple tables based on a related column."
+    def _extract_group_by(self, query):
+        match = re.search(r"group by (.*?)( order by|$)", query, re.IGNORECASE)
+        if match:
+            group_cols = match.group(1).strip()
+            return f"The GROUP BY clause groups results by: {group_cols}."
+        return None
