@@ -1,6 +1,10 @@
+from app.services.query_analysis_service import QueryAnalysisService
+
+
 class TutorService:
     def __init__(self):
-        pass
+        self.analysis_service = QueryAnalysisService()
+
 
     def generate_feedback(self, execution_result: dict, user_level: str = "beginner"):
         """
@@ -15,19 +19,21 @@ class TutorService:
             return self._handle_error(execution_result, user_level)
 
     def _handle_success(self, result, user_level):
-        if user_level == "beginner":
-            explanation = (
-                "Your query executed successfully. "
-                "This means your SQL syntax and table references are correct."
-            )
-        else:
-            explanation = "Query executed successfully with no syntax or schema violations."
+        clause_explanations = self.analysis_service.analyze(result.get("original_query", ""))
+
+        base_explanation = (
+            "Your query executed successfully."
+            if user_level == "beginner"
+            else "Query executed successfully."
+     )
 
         return {
             "status": "success",
             "data": result["data"],
-            "explanation": explanation
-        }
+            "explanation": base_explanation,
+            "clause_analysis": clause_explanations
+    }
+
 
     def _handle_error(self, result, user_level):
         error_type = result["error_type"]

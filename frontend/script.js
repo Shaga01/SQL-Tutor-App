@@ -14,18 +14,26 @@ runButton.addEventListener("click", async () => {
         });
 
         const data = await response.json();
-       if (data.status === "success") {
+       
+        if (data.status === "success") {
+            let analysisText = "";
+
+            if (data.clause_analysis) {
+                analysisText = "\n\nCLAUSE ANALYSIS:\n" + data.clause_analysis.join("\n");
+            }
+
             responseText.innerText =
                 "RESULT:\n" +
                 JSON.stringify(data.data, null, 2) +
                 "\n\nEXPLANATION:\n" +
-                data.explanation;
-        }else {
+                data.explanation +
+                analysisText;
+        } else {
             responseText.innerText =
-            "ERROR TYPE: " + data.error_type +
-            "\nMESSAGE: " + data.message +
-            "\n\nEXPLANATION:\n" +
-            data.explanation;
+                "ERROR TYPE: " + data.error_type +
+                "\nMESSAGE: " + data.message +
+             "\n\nEXPLANATION:\n" +
+             data.explanation;
 
 }
 

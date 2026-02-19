@@ -29,10 +29,13 @@ def root():
 def execute_sql(request: QueryRequest):
     execution_result = db_service.execute_query(request.query)
 
+    execution_result["original_query"] = request.query
+
     tutor_response = tutor_service.generate_feedback(
         execution_result,
         user_level="beginner"
     )
 
     return tutor_response
+
 
