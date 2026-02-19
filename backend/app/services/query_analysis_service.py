@@ -18,6 +18,10 @@ class QueryAnalysisService:
         if from_info:
             analysis.append(from_info)
 
+        join_info = self._extract_join(query_clean)
+        if join_info:
+            analysis.append(join_info)
+
         where_info = self._extract_where(query_clean)
         if where_info:
             analysis.append(where_info)
@@ -29,6 +33,11 @@ class QueryAnalysisService:
         logical_issues = self.detect_logical_issues(query_clean)
         if logical_issues:
             for issue in logical_issues:
+                analysis.append("⚠ Logical Issue: " + issue)
+
+        join_issues = self.detect_join_issues(query_clean)
+        if join_issues:
+            for issue in join_issues:
                 analysis.append("⚠ Logical Issue: " + issue)
 
         return analysis
@@ -59,6 +68,14 @@ class QueryAnalysisService:
         if match:
             group_cols = match.group(1).strip()
             return f"The GROUP BY clause groups results by: {group_cols}."
+        return None
+    
+    def _extract_join(self, query):
+        match = re.search(r"join (.*?) on (.*?)( where| group by|$)", query, re.IGNORECASE)
+        if match:
+            table = match.group(1).strip()
+            condition = match.group(2).strip()
+            return f"You are joining with table: {table} using condition: {condition}."
         return None
     
 
@@ -93,5 +110,17 @@ class QueryAnalysisService:
                 issues.append(
                     "You are selecting non-aggregated columns together with COUNT without GROUP BY."
                 )
+
+        return issues
+    
+    def detect_join_issues(self, query: str):
+        query_lower = query.lower()
+        issues = []
+
+        if "join" in query_lower:
+            if " on " not in query_lower:
+                issues.append(
+                    "JOIN detected but missing ON clause. JOIN requires a condition to relate tables."
+            )
 
         return issues
