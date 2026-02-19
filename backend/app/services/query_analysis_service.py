@@ -25,6 +25,11 @@ class QueryAnalysisService:
         group_by_info = self._extract_group_by(query_clean)
         if group_by_info:
             analysis.append(group_by_info)
+        
+        logical_issues = self.detect_logical_issues(query_clean)
+        if logical_issues:
+            for issue in logical_issues:
+                analysis.append("⚠ Logical Issue: " + issue)
 
         return analysis
 
@@ -55,3 +60,36 @@ class QueryAnalysisService:
             group_cols = match.group(1).strip()
             return f"The GROUP BY clause groups results by: {group_cols}."
         return None
+    
+
+    def detect_logical_issues(self, query: str):
+        query_lower = query.lower()
+
+        issues = []
+
+        has_count = "count(" in query_lower
+        has_group_by = "group by" in query_lower
+
+        # Detect aggregate without GROUP BY
+        if has_count and not has_group_by:
+            issues.append(
+            "You are using an aggregate function (COUNT) without a GROUP BY clause."
+            )
+
+        # Detect selecting multiple columns with COUNT but no GROUP BY
+        select_match = re.search(r"select (.*?) from", query, re.IGNORECASE)
+        if select_match:
+            columns = select_match.group(1)
+            if "count(" in columns.lower():
+                non_aggregate_columns = [
+                col.strip()
+                for col in columns.split(",")
+                if "count(" not in col.lower()
+                ]
+
+            if non_aggregate_columns and not has_group_by:
+                issues.append(
+                    "You are selecting non-aggregated columns together with COUNT without GROUP BY."
+                )
+
+        return issues
