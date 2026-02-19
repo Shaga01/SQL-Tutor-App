@@ -70,6 +70,8 @@ class QueryAnalysisService:
         has_count = "count(" in query_lower
         has_group_by = "group by" in query_lower
 
+        non_aggregate_columns = []
+
         # Detect aggregate without GROUP BY
         if has_count and not has_group_by:
             issues.append(
