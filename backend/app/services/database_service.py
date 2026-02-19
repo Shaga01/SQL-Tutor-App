@@ -10,24 +10,38 @@ class DatabaseService:
     def _initialize_database(self):
         cursor = self.connection.cursor()
 
-        # Create a sample table
         cursor.execute("""
             CREATE TABLE students (
-                id INTEGER PRIMARY KEY,
-                name TEXT,
-                age INTEGER,
-                grade TEXT
+            id INTEGER PRIMARY KEY,
+            name TEXT,
+            age INTEGER,
+            major_id INTEGER
             );
         """)
 
-        # Insert sample data
+        cursor.execute("""
+            CREATE TABLE majors (
+            id INTEGER PRIMARY KEY,
+            major_name TEXT
+        );
+        """)
+
         cursor.executemany("""
-            INSERT INTO students (name, age, grade)
+            INSERT INTO majors (major_name)
+            VALUES (?)
+        """, [
+            ("Computer Science",),
+            ("Mathematics",),
+            ("Physics",)
+        ])
+
+        cursor.executemany("""
+            INSERT INTO students (name, age, major_id)
             VALUES (?, ?, ?)
         """, [
-            ("Alice", 20, "A"),
-            ("Bob", 22, "B"),
-            ("Charlie", 21, "A"),
+            ("Alice", 20, 1),
+            ("Bob", 22, 2),
+            ("Charlie", 21, 1),
         ])
 
         self.connection.commit()
