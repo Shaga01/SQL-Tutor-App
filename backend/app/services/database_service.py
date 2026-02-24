@@ -112,4 +112,20 @@ class DatabaseService:
             "message": error_message
         }
 
+    def get_schema_info(self):
+        cursor = self.connection.cursor()
+
+        schema = {}
+
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+        tables = cursor.fetchall()
+
+        for table in tables:
+            table_name = table[0]
+            cursor.execute(f"PRAGMA table_info({table_name});")
+            columns = cursor.fetchall()
+            schema[table_name] = [col[1] for col in columns]
+
+        return schema
+
 

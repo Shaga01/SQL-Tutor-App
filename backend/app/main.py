@@ -28,12 +28,14 @@ def root():
 @app.post("/execute")
 def execute_sql(request: QueryRequest):
     execution_result = db_service.execute_query(request.query)
-
     execution_result["original_query"] = request.query
+
+    schema_info = db_service.get_schema_info()
 
     tutor_response = tutor_service.generate_feedback(
         execution_result,
-        user_level="beginner"
+        user_level="beginner",
+        schema=schema_info
     )
 
     return tutor_response
