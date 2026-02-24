@@ -4,7 +4,7 @@ class QueryAnalysisService:
     def __init__(self):
         pass
 
-    def analyze(self, query: str):
+    def analyze(self, query: str, schema: dict = None):
         query_clean = query.strip()
         query_lower = query_clean.lower()
 
@@ -113,14 +113,17 @@ class QueryAnalysisService:
 
         return issues
     
-    def detect_join_issues(self, query: str):
+    def detect_join_issues(self, query: str, schema: dict = None):
         query_lower = query.lower()
         issues = []
 
-        if "join" in query_lower:
-            if " on " not in query_lower:
-                issues.append(
-                    "JOIN detected but missing ON clause. JOIN requires a condition to relate tables."
-            )
+        if "join" in query_lower and " on " not in query_lower:
+            suggestion = ""
+            if schema and "students" in schema and "majors" in schema:
+                suggestion = " Possible join: students.major_id = majors.id."
+
+            issues.append(
+                "JOIN detected but missing ON clause." + suggestion
+    )
 
         return issues

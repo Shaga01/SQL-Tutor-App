@@ -13,13 +13,15 @@ class TutorService:
         """
 
         if execution_result["status"] == "success":
-            return self._handle_success(execution_result, user_level)
+            return self._handle_success(execution_result, user_level, schema)
 
         else:
             return self._handle_error(execution_result, user_level, schema)
 
-    def _handle_success(self, result, user_level):
-        clause_explanations = self.analysis_service.analyze(result.get("original_query", ""))
+    def _handle_success(self, result, user_level, schema=None):
+        clause_explanations = self.analysis_service.analyze(
+            result.get("original_query", ""),
+            schema)
 
         base_explanation = (
             "Your query executed successfully."
