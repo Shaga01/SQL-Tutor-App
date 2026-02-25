@@ -1,6 +1,9 @@
 const runButton = document.getElementById("runQueryBtn");
 const responseText = document.getElementById("responseText");
 
+
+
+
 runButton.addEventListener("click", async () => {
     const query = document.getElementById("sqlInput").value;
 

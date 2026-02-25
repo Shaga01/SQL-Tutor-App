@@ -10,6 +10,7 @@ db_service = DatabaseService()
 tutor_service = TutorService()
 
 
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -20,6 +21,8 @@ app.add_middleware(
 
 class QueryRequest(BaseModel):
     query: str
+
+
 
 @app.get("/")
 def root():
