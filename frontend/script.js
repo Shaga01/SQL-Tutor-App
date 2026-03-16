@@ -44,3 +44,24 @@ runButton.addEventListener("click", async () => {
         responseText.innerText = "Error connecting to backend";
     }
 });
+
+
+const generateBtn = document.getElementById("generateSqlBtn");
+
+generateBtn.addEventListener("click", async () => {
+    const question = document.getElementById("nlInput").value;
+
+    const response = await fetch("http://127.0.0.1:8000/generate-sql", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: question })
+    });
+
+    const data = await response.json();
+
+    responseText.innerText =
+        "GENERATED SQL:\n" +
+        data.generated_sql +
+        "\n\nTUTOR RESPONSE:\n" +
+        JSON.stringify(data.tutor_response, null, 2);
+});
