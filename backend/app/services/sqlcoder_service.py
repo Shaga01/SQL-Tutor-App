@@ -1,4 +1,5 @@
 import requests
+import re
 from app.services.base_llm_service import BaseLLMService
 
 class SQLCoderService(BaseLLMService):
@@ -7,27 +8,30 @@ class SQLCoderService(BaseLLMService):
         schema_text = self._format_schema(schema)
 
         prompt = f"""
-You are an expert SQL generator.
+        ### Instructions:
+        You are a SQLite expert. Generate ONLY a SQL SELECT query.
 
-Database schema:
-{schema_text}
+        ### Database Schema:
+        {schema_text}
 
-Task:
-Write a valid SQLite SELECT query for the following request.
+        ### Question:
+        {natural_language_query}
 
-Request:
-{natural_language_query}
-
-SQL Query:
-"""
+        ### SQL:
+        """
 
         response = requests.post(
             "http://localhost:11434/api/generate",
             json={
-                "model": "sqlcoder",
-                "prompt": prompt,
-                "stream": False
+        "model": "sqlcoder",
+        "prompt": prompt,
+        "stream": False,
+        "options": {
+            "temperature": 0,
+            "top_p": 0.1,
+            "num_predict": 200
             }
+          }
         )
 
         result = response.json()
@@ -42,14 +46,24 @@ SQL Query:
         return text
 
     def _clean_sql(self, sql: str):
-    # Remove markdown
-        sql = sql.replace("```sql", "").replace("```", "")
 
-    # Remove common model tokens
+    # remove markdown and tokens
+        sql = sql.replace("```sql", "").replace("```", "")
         sql = sql.replace("<s>", "").replace("</s>", "")
 
-    # Keep only SELECT statement
-        if "SELECT" in sql.upper():
-            sql = sql[sql.upper().index("SELECT"):]
+    # remove comments or weird text
+        sql = sql.replace("#", "")
+
+    # try extracting SELECT query
+        match = re.search(r"(SELECT\s+.*?;)", sql, re.IGNORECASE | re.DOTALL)
+
+        if match:
+            return match.group(1).strip()
+
+    # fallback: try if SELECT exists without semicolon
+        match = re.search(r"(SELECT\s+.*)", sql, re.IGNORECASE | re.DOTALL)
+
+        if match:
+            return match.group(1).strip() + ";"
 
         return sql.strip()

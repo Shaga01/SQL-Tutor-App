@@ -59,6 +59,17 @@ def generate_sql(request: NLRequest):
         schema_info
     )
 
+    if not generated_sql.lower().startswith("select"):
+        return {
+        "generated_sql": generated_sql,
+        "tutor_response": {
+            "status": "error",
+            "error_type": "invalid_generation",
+            "message": "The AI generated an invalid SQL query.",
+            "explanation": "The generated query is not a valid SELECT statement. The model may have made a mistake."
+        }
+    }
+
     execution_result = db_service.execute_query(generated_sql)
     execution_result["original_query"] = generated_sql
 
