@@ -20,6 +20,9 @@ class TutorService:
             return self._handle_error(execution_result, user_level, schema)
 
     def _handle_success(self, result, user_level, schema=None):
+        group_fix = self.correction_service.fix_group_by(
+            result.get("original_query", "")
+)
         clause_explanations = self.analysis_service.analyze(
             result.get("original_query", ""),
             schema
@@ -32,11 +35,12 @@ class TutorService:
         )
 
         return {
-            "status": "success",
-            "data": result["data"],
-            "explanation": base_explanation,
-            "clause_analysis": clause_explanations
-        }
+        "status": "success",
+        "data": result["data"],
+        "explanation": base_explanation,
+        "clause_analysis": clause_explanations,
+        "suggested_fix": group_fix
+}
 
     def _handle_error(self, result, user_level, schema=None):
         error_type = result["error_type"]

@@ -85,31 +85,21 @@ class DatabaseService:
         error_message_lower = error_message.lower()
 
         if "no such table" in error_message_lower:
-            return {
-            "status": "error",
-            "error_type": "table_not_found",
-            "message": "The table you referenced does not exist."
-        }
+            error_type = "table_not_found"
 
         elif "no such column" in error_message_lower:
-            return {
-            "status": "error",
-            "error_type": "column_not_found",
-            "message": "One of the columns you used does not exist in the table."
-        }
+            error_type = "column_not_found"
 
         elif "syntax error" in error_message_lower:
-            return {
-            "status": "error",
-            "error_type": "syntax_error",
-            "message": "There is a SQL syntax error in your query."
-        }
+            error_type = "syntax_error"
 
         else:
-            return {
+            error_type = "unknown_error"
+
+        return {
             "status": "error",
-            "error_type": "unknown_error",
-            "message": error_message
+            "error_type": error_type,
+            "message": error_message   # ✅ KEEP ORIGINAL MESSAGE
         }
 
     def get_schema_info(self):
